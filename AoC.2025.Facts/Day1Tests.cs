@@ -56,8 +56,11 @@ public class Day1Test
         result.ShouldBe(expected);
     }
 
-    private static class AocInput
+    [Fact]
+    public void ShouldRunDay1Input()
     {
-        
+        var lines = AocInput.Day1Input.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+        var result = Solve(lines);
+        result.ShouldBe(1034);
     }
 }
