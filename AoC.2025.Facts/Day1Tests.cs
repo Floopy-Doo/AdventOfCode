@@ -1,0 +1,63 @@
+﻿using Shouldly;
+using System.Collections.ObjectModel;
+using static AcC._2025.Day1;
+
+namespace AoC._2025.Facts;
+
+public class Day1Test
+{
+    public static TheoryData<string[], int> TestData = new()
+    {
+        { ["L68", "L30", "R48", "L5", "R60", "L55", "L1", "L99", "R14", "L82"], 3 },
+    };
+
+    public static TheoryData<string, Operations> OperationParseData = new()
+    {
+        { "L68", new Operations.Left(68) },
+        { "L30", new Operations.Left(30) },
+        { "R60", new Operations.Right(60) },
+    };
+
+    public static TheoryData<Rotations, Operations, Rotations> ApplyOperationData = new()
+        {
+            { new Rotations(50, 0), new Operations.Left(68), new Rotations(82, 0) },
+            { new Rotations(82, 0), new Operations.Left(30), new Rotations(52, 0) },
+            { new Rotations(52, 0), new Operations.Right(48), new Rotations(0, 1) },
+            { new Rotations(0, 1), new Operations.Left(5), new Rotations(95, 1) },
+            { new Rotations(95, 1), new Operations.Right(60), new Rotations(55, 1) },
+            { new Rotations(55, 1), new Operations.Left(55), new Rotations(0, 2) },
+            { new Rotations(0, 2), new Operations.Left(1), new Rotations(99, 2) },
+            { new Rotations(99, 2), new Operations.Left(99), new Rotations(0, 3) },
+            { new Rotations(0, 3), new Operations.Right(14), new Rotations(14, 3) },
+            { new Rotations(14, 3), new Operations.Left(82), new Rotations(32, 3) },
+    };
+
+    [Theory]
+    [MemberData(nameof(TestData))]
+    public void ShouldEvaluateTheCorrectAmountOfZeros(string[] input, int expected)
+    {
+        var result = Solve(input);
+        result.ShouldBe(expected);
+    }
+
+    [Theory]
+    [MemberData(nameof(OperationParseData))]
+    public void ShouldExtractCorrectOperation(string input,  Operations expected)
+    {
+        var result = Parse(input);
+        result.ShouldBe(expected);
+    }
+
+    [Theory]
+    [MemberData(nameof(ApplyOperationData))]
+    public void ShouldApplyTheOperationToTheCurrentRotation(Rotations initial, Operations operation, Rotations expected)
+    {
+        var result = Apply(initial, operation);
+        result.ShouldBe(expected);
+    }
+
+    private static class AocInput
+    {
+        
+    }
+}

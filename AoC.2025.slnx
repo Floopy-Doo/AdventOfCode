@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AoC.2025.Facts/AoC.2025.Facts.csproj" />
+  <Project Path="AoC.2025/AoC.2025.csproj" />
+</Solution>
