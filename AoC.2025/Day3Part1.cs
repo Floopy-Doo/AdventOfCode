@@ -1,6 +1,6 @@
 ﻿namespace AcC._2025;
 
-public static class Day3
+public static class Day3Part1
 {
     public static int Solve(string input) =>
         input.Split("\n", StringSplitOptions.RemoveEmptyEntries)

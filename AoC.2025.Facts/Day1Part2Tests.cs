@@ -1,10 +1,10 @@
 ﻿using AcC._2025;
 using Shouldly;
-using static AcC._2025.Day2;
+using static AcC._2025.Day1Part2;
 
 namespace AoC._2025.Facts;
 
-public class Day2Tests
+public class Day1Part2Tests
 {
     public static TheoryData<string[], int> TestData = new()
     {

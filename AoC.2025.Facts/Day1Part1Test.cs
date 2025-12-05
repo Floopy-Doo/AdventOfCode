@@ -1,11 +1,10 @@
 ﻿using Shouldly;
-using System.Collections.ObjectModel;
 using AcC._2025;
-using static AcC._2025.Day1;
+using static AcC._2025.Day1Part1;
 
 namespace AoC._2025.Facts;
 
-public class Day1Test
+public class Day1Part1Test
 {
     public static TheoryData<string[], int> TestData = new()
     {

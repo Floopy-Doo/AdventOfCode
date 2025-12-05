@@ -1,9 +1,9 @@
 ﻿using Shouldly;
-using static AcC._2025.Day3;
+using static AcC._2025.Day3Part1;
 
 namespace AoC._2025.Facts;
 
-public class Day3Tests
+public class Day3Part1Tests
 {
     public static TheoryData<string, int> LineData = new()
     {

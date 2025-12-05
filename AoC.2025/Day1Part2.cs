@@ -1,6 +1,6 @@
 ﻿namespace AcC._2025;
 
-public static class Day2
+public static class Day1Part2
 {
     public static int Solve(IReadOnlyCollection<string> input)
     {
