@@ -16,6 +16,41 @@ public partial class Day5
         return products.Count(x => database.Any(r => r.Contains(x)));
     }
 
+    public static decimal SolvePart2(string input)
+    {
+        var data = input.Split("\n\n");
+        var databaseRaw = data[0].Split("\n", StringSplitOptions.RemoveEmptyEntries);
+
+        var orderedRanges = databaseRaw
+            .Select(ParseDatabaseEntry)
+            .OrderBy(x => x.Lower.Value)
+            .ToArray();
+        var database = SimplifyRangesRecursiveWhenInAscendingOrder(orderedRanges[0], orderedRanges[1..]);
+
+        return database.Select(x => x.Upper.Value - x.Lower.Value + 1).Sum();
+    }
+
+    private static IEnumerable<ProductRange> SimplifyRangesRecursiveWhenInAscendingOrder(
+        ProductRange previousRange,
+        ProductRange[] remainingRanges)
+    {
+        if (remainingRanges.Length == 0) return [previousRange];
+
+        var currentRange = remainingRanges[0];
+        if (previousRange.Contains(currentRange.Upper))
+        {
+            return SimplifyRangesRecursiveWhenInAscendingOrder(previousRange, remainingRanges[1..]);
+        }
+
+        if (previousRange.Contains(currentRange.Lower))
+        {
+            var extendedRange = new ProductRange(previousRange.Lower, currentRange.Upper);
+            return SimplifyRangesRecursiveWhenInAscendingOrder(extendedRange, remainingRanges[1..]);
+        }
+
+        return SimplifyRangesRecursiveWhenInAscendingOrder(currentRange, remainingRanges[1 ..]).Append(previousRange);
+    }
+
     private static ProductRange ParseDatabaseEntry(string raw)
     {
         var inputData = MyRegex().Match(raw);
@@ -28,6 +63,12 @@ public partial class Day5
     private static ProductId ParseProductIds(string raw)
     {
         return new ProductId(decimal.Parse(raw));
+    }
+
+    private static IEnumerable<ProductId> InfiniteNumberGenerator(decimal min, decimal max)
+    {
+        var number = min;
+        while (number <= max) yield return new ProductId(number++);
     }
 
     private sealed record ProductId(decimal Value);
