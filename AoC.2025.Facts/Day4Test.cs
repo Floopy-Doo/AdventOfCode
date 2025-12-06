@@ -57,4 +57,18 @@ public class Day4Test
         var result = SolvePart1(AocInput.Day4Input);
         result.ShouldBe(1486m);
     }
+
+    [Fact]
+    public void ShouldSolvePart2FullSample()
+    {
+        var input = "..@@.@@@@.\n@@@.@.@.@@\n@@@@@.@.@@\n@.@@@@..@.\n@@.@@@@.@@\n.@@@@@@@.@\n.@.@.@.@@@\n@.@@@.@@@@\n.@@@@@@@@.\n@.@.@@@.@.\n";
+        var result = SolvePart2(input);
+        result.ShouldBe(43);
+    }
+    [Fact]
+    public void ShouldFIndPart2Solution()
+    {
+        var result = SolvePart2(AocInput.Day4Input);
+        result.ShouldBe(9024m);
+    }
 }
