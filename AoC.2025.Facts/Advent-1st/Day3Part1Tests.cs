@@ -1,7 +1,7 @@
 ﻿using Shouldly;
-using static AcC._2025.Day3Part1;
+using static AcC._2025.Advent_1st.Day3Part1;
 
-namespace AoC._2025.Facts;
+namespace AoC._2025.Facts.Advent_1st;
 
 public class Day3Part1Tests
 {

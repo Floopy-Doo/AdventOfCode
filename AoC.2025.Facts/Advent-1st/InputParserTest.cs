@@ -1,7 +1,7 @@
-﻿using AcC._2025;
+﻿using AcC._2025.Advent_1st;
 using Shouldly;
 
-namespace AoC._2025.Facts;
+namespace AoC._2025.Facts.Advent_1st;
 
 public class InputParserTest
 {

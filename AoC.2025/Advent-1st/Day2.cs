@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace AcC._2025;
+namespace AcC._2025.Advent_1st;
 
 public static class Day2
 {
