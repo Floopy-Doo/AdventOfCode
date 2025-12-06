@@ -32,9 +32,9 @@ public static partial class Day6
         if (remainderOperations.Length == 0 && remainderOperatorLine.Length == 0)
             return [];
         if (remainderOperations.Length == 0)
-            throw new InvalidOperationException($"something did not get parsed, leftover {remainderOperatorLine}");
+            throw new InvalidOperationException($"something did not get parsed, leftover '{remainderOperatorLine}'");
         if (remainderOperatorLine.Length == 0)
-            throw new InvalidOperationException($"some operation do not have a value, leftover {remainderOperations.Length}");
+            throw new InvalidOperationException($"some operation do not have a value, leftover '{remainderOperations.Length}'");
 
         var op = remainderOperations[0];
         var operand = remainderOperatorLine.Substring(0, op.Length);
