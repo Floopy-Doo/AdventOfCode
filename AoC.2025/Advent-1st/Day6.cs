@@ -32,6 +32,39 @@ public static partial class Day6
             .Sum(x => x.Value);
     }
 
+    public static decimal SolvePart2(string input)
+    {
+        var lines = input.Split("\n", StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Reverse().ToArray())
+            .ToArray();
+        var transposedArray = lines[1..]
+            .Select(x => x.ToArray())
+            .Aggregate(
+                lines[0].Select(c => new[] { c }),
+                (acc,  line) => acc.Zip(line).Select(x => (char[])[.. x.First, x.Second]))
+            .ToArray();
+
+        var problems = SplitByProblem([], transposedArray)
+            .Where(x => x.SelectMany(z => z).Any(z => z != ' ')).ToArray();
+
+
+        var results = problems.Select(problem =>
+                problem
+                    .Select(chars => decimal.Parse(new string(chars[..^1].Where(x => x != ' ').ToArray())))
+                    .Aggregate((acc, value) => problem[^1][^1] == '+' ? acc + value : acc * value))
+            .ToArray();
+
+
+        return results.Sum();
+
+        static IEnumerable<char[][]> SplitByProblem(char[][] current, char[][] lines)
+        {
+            if (lines.Length == 0) return [current];
+            if (lines[0].All(x => x == ' ')) return [current, .. SplitByProblem([], lines[1..])];
+            return SplitByProblem([.. current, lines[0]], lines[1..]);
+        }
+    }
+
     public static decimal SolvePart1Approach2(string input)
     {
         var stringsEnumerable = input.Split("\n", StringSplitOptions.RemoveEmptyEntries)
@@ -92,6 +125,15 @@ public static partial class Day6
         public sealed record Multiply(int Index, int Length) : Operation(Index, Length);
 
         public sealed record Operator(int Index, int Length, decimal Value) : Operation(Index, Length);
+    }
+
+    private abstract record Ops
+    {
+        public sealed record Add : Ops;
+
+        public sealed record Multiply : Ops;
+
+        public sealed record Operand(decimal Value) : Ops;
     }
 
 
