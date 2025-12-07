@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Xml.Schema;
 
 namespace AcC._2025.Advent_1st;
 
@@ -19,12 +20,38 @@ public static partial class Day6
 
         var operandLines = lines[..^1];
 
-        return operandLines
+        var inputOne = operandLines
             .SelectMany(line => ParseOperationsRecursive(operations, line))
-            .Concat(operations)
+            .Concat(operations);
+
+        var valueTuples = inputOne
             .GroupBy(x => x.Index, (i, o) => o.ToArray())
-            .Select(Calc)
-            .Sum();
+            .Select((operations1, i) => (Index: i, Value: Calc(operations1, operandLines.Length)));
+
+        return valueTuples
+            .Sum(x => x.Value);
+    }
+
+    public static decimal SolvePart1Approach2(string input)
+    {
+        var stringsEnumerable = input.Split("\n", StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Split(" ", StringSplitOptions.RemoveEmptyEntries))
+            .ToArray();
+
+        var transposedArray = stringsEnumerable
+            .Skip(1)
+            .Aggregate(
+                stringsEnumerable
+                    .First()
+                    .Select(x => new[]{x}),
+            (acc, line) => acc
+                .Zip(line)
+                .Select(x => (string[])[x.Second, .. x.First]))
+            .ToArray();
+
+        var result = transposedArray
+            .Select(x => x[1..].Select(decimal.Parse).Aggregate((acc, z) => x[0]=="+" ? (acc + z) : (acc * z)));
+        return result.Sum();
     }
 
     private static IEnumerable<Operation.Operator> ParseOperationsRecursive(Operation[] remainderOperations, string remainderOperatorLine)
@@ -36,20 +63,24 @@ public static partial class Day6
         if (remainderOperatorLine.Length == 0)
             throw new InvalidOperationException($"some operation do not have a value, leftover '{remainderOperations.Length}'");
 
-        var op = remainderOperations[0];
-        var operand = remainderOperatorLine.Substring(0, op.Length);
-        return ParseOperationsRecursive(remainderOperations[1..], remainderOperatorLine[op.Length..])
-            .Append(new Operation.Operator(op.Index, operand.Length, int.Parse(operand)));
+        var operation = remainderOperations[0];
+        var operandRaw = remainderOperatorLine.Substring(0, operation.Length);
+
+        if (operandRaw.Trim().Contains(' '))
+            throw new InvalidOperationException($"invalid operand '{operandRaw}'");
+
+        return ParseOperationsRecursive(remainderOperations[1..], remainderOperatorLine[operation.Length..])
+            .Append(new Operation.Operator(operation.Index, operandRaw.Length, decimal.Parse(operandRaw)));
     }
 
-    private static decimal Calc(Operation[] operations)
+    private static decimal Calc(Operation[] operations, int operandLinesLength)
     {
         var operands = operations.OfType<Operation.Operator>();
         var operation = operations.Single(x => x is not Operation.Operator);
         return operation switch
         {
-            Operation.Add => operands.Aggregate(0, (acc, op) => acc + op.Value),
-            Operation.Multiply => operands.Aggregate(1, (acc, op) => acc * op.Value),
+            Operation.Add => operands.Select(x => x.Value).Aggregate((acc, op) => acc + op),
+            Operation.Multiply => operands.Select(x => x.Value).Aggregate((acc, op) => acc * op),
             _ => throw new InvalidOperationException($"unexpected operation {operation}"),
         };
     }
@@ -60,10 +91,12 @@ public static partial class Day6
 
         public sealed record Multiply(int Index, int Length) : Operation(Index, Length);
 
-        public sealed record Operator(int Index, int Length, int Value) : Operation(Index, Length);
+        public sealed record Operator(int Index, int Length, decimal Value) : Operation(Index, Length);
     }
 
 
-    [GeneratedRegex(@"[+*]\s+")]
+    [GeneratedRegex(@"[+*]\s*")]
     private static partial Regex OperatorRegex();
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex SplitBySpacesRegex();
 }

@@ -20,7 +20,10 @@ public class Day6Test
     public void ShouldSolvePart1(string input, decimal expected)
     {
         var result = SolvePart1(input);
-        result.ShouldBeEquivalentTo(expected);
+        var result2 = SolvePart1Approach2(input);
+        result.ShouldSatisfyAllConditions(
+            x => x.ShouldBeEquivalentTo(expected),
+            x => x.ShouldBeEquivalentTo(result2));
     }
 
     [Fact]
@@ -28,13 +31,19 @@ public class Day6Test
     {
         var input = "123 328  51 64 \n 45 64  387 23 \n  6 98  215 314\n*   +   *   +  \n";
         var result = SolvePart1(input);
-        result.ShouldBe(4277556);
+        var result2 = SolvePart1Approach2(input);
+        result.ShouldSatisfyAllConditions(
+            x => x.ShouldBe(4277556),
+            x => x.ShouldBe(result2));
     }
 
     [Fact]
     public void ShouldFindPart1Solution()
     {
         var result = SolvePart1(AocInput.Day6Input);
-        result.ShouldBe(59562874502m);
+        var result2 = SolvePart1Approach2(AocInput.Day6Input);
+        result.ShouldSatisfyAllConditions(
+            x => x.ShouldBe(6209956042374m),
+            x => x.ShouldBe(result2));
     }
 }
