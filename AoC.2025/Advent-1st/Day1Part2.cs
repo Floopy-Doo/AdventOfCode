@@ -1,4 +1,4 @@
-﻿namespace AcC._2025.Advent_1st;
+﻿namespace AoC._2025.Advent_1st;
 
 public static class Day1Part2
 {

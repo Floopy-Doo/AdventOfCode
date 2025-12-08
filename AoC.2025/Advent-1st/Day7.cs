@@ -1,6 +1,6 @@
-using static AcC._2025.Advent_1st.Day7.Propagation;
+using static AoC._2025.Advent_1st.Day7.Propagation;
 
-namespace AcC._2025.Advent_1st;
+namespace AoC._2025.Advent_1st;
 
 public static class Day7
 {

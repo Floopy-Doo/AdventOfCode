@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
-using System.Xml.Schema;
 
-namespace AcC._2025.Advent_1st;
+namespace AoC._2025.Advent_1st;
 
 public static partial class Day6
 {

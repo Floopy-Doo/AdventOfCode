@@ -1,4 +1,4 @@
-﻿namespace AoC._2025.Facts;
+﻿namespace AoC._2025.Facts.Advent_1st;
 
 public static class AocInput
 {

@@ -1,6 +1,6 @@
-﻿using AcC._2025.Advent_1st;
+﻿using AoC._2025.Advent_1st;
 using Shouldly;
-using static AcC._2025.Advent_1st.Day1Part2;
+using static AoC._2025.Advent_1st.Day1Part2;
 
 namespace AoC._2025.Facts.Advent_1st;
 

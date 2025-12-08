@@ -1,5 +1,5 @@
 using Shouldly;
-using static AcC._2025.Advent_1st.Day7;
+using static AoC._2025.Advent_1st.Day7;
 
 namespace AoC._2025.Facts.Advent_1st;
 

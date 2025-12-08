@@ -1,4 +1,4 @@
-﻿using AcC._2025.Advent_1st;
+﻿using AoC._2025.Advent_1st;
 using Shouldly;
 
 namespace AoC._2025.Facts.Advent_1st;
