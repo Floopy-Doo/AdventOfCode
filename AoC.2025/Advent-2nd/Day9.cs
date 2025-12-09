@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 
 namespace AoC._2025.Advent_2nd;
 
@@ -6,10 +7,7 @@ public static class Day9
 {
     public static decimal SolvePart1(string input)
     {
-        var points = input.Split("\n", StringSplitOptions.RemoveEmptyEntries)
-            .Select(line => line.Split(",", StringSplitOptions.RemoveEmptyEntries))
-            .Select(line => new Point(decimal.Parse(line[1]), decimal.Parse(line[0])))
-            .ToArray();
+        var points = ParsePoints(input);
 
         var allPossibleAreas = AllPossibleRectanglesRecursive(points);
         return allPossibleAreas
@@ -18,9 +16,55 @@ public static class Day9
             .First();
     }
 
-    public static decimal SolvePart2(string input)
+    public static decimal SolvePart2BruteForce(string input)
     {
-        return 0;
+        var cornerPoints = ParsePoints(input);
+        var allPossibleRectangles = AllPossibleRectanglesRecursive(cornerPoints);
+
+        var maxX = cornerPoints.Max(point => point.X);
+        var minX = cornerPoints.Min(point => point.X);
+        var maxY = cornerPoints.Max(point => point.Y);
+        var minY = cornerPoints.Min(point => point.Y);
+
+        var edgePoints = new List<Point>((maxY - minY) * (maxX - minY));
+
+        var startCornerX = new List<Point>(maxX - minY);
+        for (var iX = minX; iX <= maxX; iX++)
+        {
+            Point? startCornerY = null;
+            for (var iY = minY; iY <= maxY; iY++)
+            {
+                var possibleEdge = new Point(iX, iY);
+                var isCorner = cornerPoints.Contains(possibleEdge);
+                var hasActiveYEdge = startCornerY is not null;
+                var activeXEdgeStart = startCornerX.SingleOrDefault(p => p?.Y == possibleEdge.Y, null);
+
+                startCornerY = (isCorner, hasActiveYEdge) switch
+                {
+                    (true, true) => null,
+                    (true, false) => possibleEdge,
+                    (false, _) => startCornerY,
+                };
+
+                if (isCorner && activeXEdgeStart is {} x) startCornerX.Remove(x);
+                if (isCorner && activeXEdgeStart is null) startCornerX.Add(possibleEdge);
+                if (!isCorner && (activeXEdgeStart is not null || hasActiveYEdge)) edgePoints.Add(possibleEdge);
+            }
+        }
+
+        var includedRectangle = allPossibleRectangles
+            .Where(area => !edgePoints.Any(point => IsInArea(point, area)));
+        return includedRectangle
+            .Select(area => area.Value)
+            .OrderByDescending(area => area)
+            .First();
+
+        static bool IsInArea(Point point, Area area)
+        {
+            var withinX = decimal.Min(area.A.X, area.B.X) < point.X && point.X < decimal.Max(area.A.X, area.B.X);
+            var withinY = decimal.Min(area.A.Y, area.B.Y) < point.Y && point.Y < decimal.Max(area.A.Y, area.B.Y);
+            return withinX && withinY;
+        }
     }
 
     private static IEnumerable<Area> AllPossibleRectanglesRecursive(Point[] corners)
@@ -39,7 +83,15 @@ public static class Day9
             .Concat(AllPossibleRectanglesRecursive(remainingCorners));
     }
 
-    private sealed record Point(decimal X, decimal Y);
+    private static Point[] ParsePoints(string input)
+    {
+        return input.Split("\n", StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.Split(",", StringSplitOptions.RemoveEmptyEntries))
+            .Select(line => new Point(int.Parse(line[1]), int.Parse(line[0])))
+            .ToArray();
+    }
+
+    private sealed record Point(int X, int Y);
 
     private sealed record Area(Point A, Point B, decimal Value);
 }
