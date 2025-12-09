@@ -32,7 +32,7 @@ public static partial class Day8
         var first = unconnectedJunctionBoxes[0];
         var remainingUnconnectedJunctionBoxes = unconnectedJunctionBoxes[1..];
         var directCircuitsWithThisBox = remainingUnconnectedJunctionBoxes
-            .Select(second => new DirectCircuit(first, second, Convert.ToDecimal(Vector3.Distance(first, second))));
+            .Select(second => new DirectCircuit(first, second, Convert.ToDecimal(Vector3.DistanceSquared(first, second))));
 
         return directCircuitsWithThisBox
             .Concat(ConnectJunctionBoxesRecursive(remainingUnconnectedJunctionBoxes));
