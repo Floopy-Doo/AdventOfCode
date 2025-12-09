@@ -63,4 +63,19 @@ public class Day8Test
         var result = SolvePart1(1000, Day8Input);
         result.ShouldBe(29406m);
     }
+
+    [Fact]
+    public void ShouldSolvePart2FullSample()
+    {
+        var input = "162,817,812\n57,618,57\n906,360,560\n592,479,940\n352,342,300\n466,668,158\n542,29,236\n431,825,988\n739,650,466\n52,470,668\n216,146,977\n819,987,18\n117,168,530\n805,96,715\n346,949,466\n970,615,88\n941,993,340\n862,61,35\n984,92,344\n425,690,689\n";
+        var result = SolvePart2(10, input);
+        result.ShouldBe(25272m);
+    }
+
+    [Fact]
+    public void ShouldFindPart2Solution()
+    {
+        var result = SolvePart2(1000, Day8Input);
+        result.ShouldBe(7499461416m);
+    }
 }

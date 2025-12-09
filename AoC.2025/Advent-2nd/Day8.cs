@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace AoC._2025.Advent_2nd;
@@ -23,6 +24,27 @@ public static partial class Day8
 
 
         return biggestCircuits.Aggregate((acc, lenght) => acc * lenght);
+    }
+
+    public static decimal SolvePart2(int relevantCount, string input)
+    {
+        var junctionBoxes = ParseIntoVectors(input);
+        var directCircuits = ConnectJunctionBoxesRecursive(junctionBoxes);
+        var orderedDirectCircuits = directCircuits
+            .OrderBy(x => x.Distance)
+            .ToList();
+
+        Vector3[][] circuits = [];
+        DirectCircuit? lastAddedCircuits = null;
+        foreach (var circuit in orderedDirectCircuits)
+        {
+            if (circuits.Length == 1 && circuits[0].Length == junctionBoxes.Length) break;
+            lastAddedCircuits = circuit;
+            circuits = JoinCircuit(circuits, circuit.First, circuit.Second);
+        }
+
+        var distanceToWall = Convert.ToDecimal(lastAddedCircuits?.First.X ?? 1) * Convert.ToDecimal(lastAddedCircuits?.Second.X ?? 1);
+        return distanceToWall;
     }
 
     private static IEnumerable<DirectCircuit> ConnectJunctionBoxesRecursive(Vector3[] unconnectedJunctionBoxes)
