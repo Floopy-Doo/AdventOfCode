@@ -16,6 +16,47 @@ public static class Day9
             .First();
     }
 
+    public static decimal SolvePart2(string input)
+    {
+        var corners = ParsePoints(input);
+        var allPossibleRectangles = AllPossibleRectanglesRecursive(corners);
+
+        var edges = CompileEdgesRecursive(corners[0], corners[1..], corners[0]).ToList();
+
+        var includedRectangle = allPossibleRectangles
+            .Where(area => !edges.Any(point => IsInArea(point, area)));
+        return includedRectangle
+            .Select(area => area.Value)
+            .OrderByDescending(area => area)
+            .First();
+    }
+
+    private static IEnumerable<Point> CompileEdgesRecursive(Point current, Point[] remaining, Point initial)
+    {
+        if (remaining.Length == 0) return GetEdges(current, DistanceX(initial, current), DistanceY(initial, current));
+
+        var closestCorner = remaining
+            .Where(p => p.X == current.X || p.Y == current.Y)
+            .Select(p => (Point: p, DistanceX: DistanceX(p, current), DistanceY: DistanceY(p, current)))
+            .OrderBy(p => int.Abs(p.DistanceX + p.DistanceY))
+            .FirstOrDefault();
+
+        var edges = GetEdges(current, closestCorner.DistanceX, closestCorner.DistanceY);
+        return edges
+            .Concat(CompileEdgesRecursive(
+                closestCorner.Point,
+                remaining.Except([closestCorner.Point]).ToArray(),
+                initial));
+
+        static IEnumerable<Point> GetEdges(Point current, int distanceX, int distanceY) =>
+            Enumerable
+                .Range(1, int.Max(int.Abs(distanceX), int.Abs(distanceY)) - 1)
+                .Select(i => new Point(
+                    current.X + i * Math.Sign(distanceX), current.Y + i * Math.Sign(distanceY)));
+        int DistanceX(Point a, Point b) => a.X - b.X;
+        int DistanceY(Point a, Point b) => a.Y - b.Y;
+    }
+
     public static decimal SolvePart2BruteForce(string input)
     {
         var cornerPoints = ParsePoints(input);
@@ -58,13 +99,13 @@ public static class Day9
             .Select(area => area.Value)
             .OrderByDescending(area => area)
             .First();
+    }
 
-        static bool IsInArea(Point point, Area area)
-        {
-            var withinX = decimal.Min(area.A.X, area.B.X) < point.X && point.X < decimal.Max(area.A.X, area.B.X);
-            var withinY = decimal.Min(area.A.Y, area.B.Y) < point.Y && point.Y < decimal.Max(area.A.Y, area.B.Y);
-            return withinX && withinY;
-        }
+    private static bool IsInArea(Point point, Area area)
+    {
+        var withinX = decimal.Min(area.A.X, area.B.X) < point.X && point.X < decimal.Max(area.A.X, area.B.X);
+        var withinY = decimal.Min(area.A.Y, area.B.Y) < point.Y && point.Y < decimal.Max(area.A.Y, area.B.Y);
+        return withinX && withinY;
     }
 
     private static IEnumerable<Area> AllPossibleRectanglesRecursive(Point[] corners)

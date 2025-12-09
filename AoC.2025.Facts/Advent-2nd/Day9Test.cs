@@ -55,14 +55,24 @@ public class Day9Test
     public void ShouldSolvePart2FullSample()
     {
         var input = "7,1\n11,1\n11,7\n9,7\n9,5\n2,5\n2,3\n7,3\n";
-        var result = SolvePart2BruteForce(input);
-        result.ShouldBe(24m);
+        var result = SolvePart2(input);
+        var resultBruteForce = SolvePart2BruteForce(input);
+        result.ShouldSatisfyAllConditions(
+            r => r.ShouldBe(24m),
+            r => r.ShouldBe(resultBruteForce));
+    }
+
+    [Fact(Skip = "BruteforceAttempt")]
+    public void ShouldFindPart2BruteForceSolution()
+    {
+        var result = SolvePart2BruteForce(Day9Input);
+        result.ShouldBe(1675);
     }
 
     [Fact]
     public void ShouldFindPart2Solution()
     {
-        var result = SolvePart2BruteForce(Day9Input);
+        var result = SolvePart2(Day9Input);
         result.ShouldBe(1675);
     }
 }
