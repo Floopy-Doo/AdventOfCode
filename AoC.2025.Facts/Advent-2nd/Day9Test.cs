@@ -66,13 +66,13 @@ public class Day9Test
     public void ShouldFindPart2BruteForceSolution()
     {
         var result = SolvePart2BruteForce(Day9Input);
-        result.ShouldBe(1675);
+        result.ShouldBe(1525241870m);
     }
 
     [Fact]
     public void ShouldFindPart2Solution()
     {
         var result = SolvePart2(Day9Input);
-        result.ShouldBe(1675);
+        result.ShouldBe(1525241870m);
     }
 }
