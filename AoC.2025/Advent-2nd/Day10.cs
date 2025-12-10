@@ -7,9 +7,16 @@ public static class Day10
         var allProblems = input.Split("\n", StringSplitOptions.RemoveEmptyEntries);
         var problems = allProblems.Select(ParseProblem);
 
-        var smallestSolveSequencePerProblem = problems.Select(x => BFS(x.IndicatorToggles, x.RequiredIndicators));
+        List<Node[]> results = [];
+        Parallel.ForEach(problems, problem => results.Add(BFS(problem.IndicatorToggles, problem.RequiredIndicators)));
 
-        return smallestSolveSequencePerProblem.Sum(x => x.Length);
+        return results.Sum(x => x.Length);
+    }
+
+
+    public static decimal SolvePart2(string input)
+    {
+        return 0;
     }
 
     public static Problem ParseProblem(string line)
@@ -43,12 +50,6 @@ public static class Day10
 
         static Input.JoltageRequirements ParseJoltage(string joltageRaw) =>
             new(joltageRaw.Trim('{', '}').Split(',').Select(int.Parse).ToArray());
-    }
-
-
-    public static decimal SolvePart2(string input)
-    {
-        return 0;
     }
 
     public static Node[] BFS(
