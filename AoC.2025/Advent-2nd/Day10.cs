@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace AoC._2025.Advent_2nd;
 
 public static class Day10
@@ -69,22 +71,29 @@ public static class Day10
         while (nextSearch.Count != 0)
         {
             var (currentNode, branch) = nextSearch.Dequeue();
-            if (currentNode.Indicators.All(x => !x)) return branch;
+            if (IsResult(currentNode)) return branch;
 
             var newStates = possibleToggles
                 .Select(toggles => new Node(toggles, ApplyToggle(currentNode.Indicators, toggles)));
             var childSearches = newStates
                 .Where(nextNode => branch.All(n => !AreSameIndicators(n.Indicators,nextNode.Indicators)))
-                .OrderBy(x => x.Indicators.Count(x => x))
+                .OrderBy(x => x.Indicators.Count(z => z))
                 .Select(nextNode => (nextNode, branch.Append(nextNode).ToArray()));
 
-            foreach (var childSearch in childSearches) nextSearch.Enqueue(childSearch);
+            foreach (var childSearch in childSearches)
+            {
+                if (IsResult(childSearch.nextNode)) return childSearch.Item2;
+                
+                nextSearch.Enqueue(childSearch);
+            }
         }
 
         return [];
 
         static bool[] ApplyToggle(bool[] indicators, bool[] toggles) => indicators.Zip(toggles).Select(x => x.Second ? !x.First : x.First).ToArray();
         static bool AreSameIndicators(bool[] indicatorA, bool[] indicatorB) => indicatorA.Zip(indicatorB).Aggregate(true, (b, tuple) => b && tuple.First == tuple.Second);
+
+        static bool IsResult(Node node) => node.Indicators.All(x => !x);
     }
 
     public static NodeJoltage[] BFSJoltages(bool[][] possibleToggles, int[] requiredJoltages)
@@ -95,7 +104,7 @@ public static class Day10
         while (nextSearch.Count != 0)
         {
             var (currentNode, branch) = nextSearch.Dequeue();
-            if (currentNode.Joltages.All(x => x == 0)) return branch;
+            if (IsResult(currentNode)) return branch;
 
             var newStates = possibleToggles
                 .Select(toggles => new NodeJoltage(toggles, ApplyToggle(currentNode.Joltages, toggles)));
@@ -104,12 +113,18 @@ public static class Day10
                 .OrderBy(x => x.Joltages.Sum())
                 .Select(nextNode => (nextNode, branch.Append(nextNode).ToArray()));
 
-            foreach (var childSearch in childSearches) nextSearch.Enqueue(childSearch);
+            foreach (var childSearch in childSearches)
+            {
+                if (IsResult(childSearch.nextNode)) return childSearch.Item2;
+
+                nextSearch.Enqueue(childSearch);
+            }
         }
 
         return [];
 
         static int[] ApplyToggle(int[] joltages, bool[] toggles) => joltages.Zip(toggles).Select(x => x.Second ? (x.First - 1) : x.First).ToArray();
+        static bool IsResult(NodeJoltage node) => node.Joltages.All(x => x == 0);
     }
 
     public sealed record Problem(bool[] RequiredIndicators, int[] RequiredJoltages, bool[][] Toggles);
