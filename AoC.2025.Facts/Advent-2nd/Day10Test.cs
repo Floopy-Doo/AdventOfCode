@@ -33,7 +33,7 @@ public class Day10Test
     };
 
 
-    public static TheoryData<string, bool[], bool[][]> ParseData = new()
+    public static TheoryData<string, bool[], bool[][], int[]> ParseData = new()
     {
         {
             "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}",
@@ -45,7 +45,8 @@ public class Day10Test
                 [false, false, true, true],
                 [true, false, true, false],
                 [true, true, false, false],
-            ]
+            ],
+            [3,5,4,7]
         },        {
             "[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}",
             [false, false, false, true, false],
@@ -55,12 +56,16 @@ public class Day10Test
                 [true, false, false, false, true],
                 [true, true, true, false, false],
                 [false, true, true, true, true],
-            ]
+            ],
+            [7,5,12,7,2]
         },
     };
 
     public static TheoryData<string, decimal> SampleDataPart2 = new()
     {
+        { "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}\n", 10 },
+        { "[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}\n", 12 },
+        { "[.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}\n", 11 },
     };
 
     [Theory]
@@ -75,18 +80,19 @@ public class Day10Test
     [MemberData(nameof(TreeSearchData))]
     public void ShouldSolveTree(bool[] input, bool[][] toggles, Node[] expected)
     {
-        var result = BFS(toggles, input);
+        var result = BFSIndicators(toggles, input);
         result.ShouldBeEquivalentTo(expected);
     }
 
     [Theory]
     [MemberData(nameof(ParseData))]
-    public void ShouldSolveParse(string input, bool[] expectedIndicators, bool[][] expectedToggles)
+    public void ShouldSolveParse(string input, bool[] expectedIndicators, bool[][] expectedToggles, int[] expectedJoltages)
     {
         var result = ParseProblem(input);
         result.ShouldSatisfyAllConditions(
-            x => x.IndicatorToggles.ShouldBeEquivalentTo(expectedToggles),
-            x => x.RequiredIndicators.ShouldBeEquivalentTo(expectedIndicators));
+            x => x.Toggles.ShouldBeEquivalentTo(expectedToggles),
+            x => x.RequiredIndicators.ShouldBeEquivalentTo(expectedIndicators),
+            x => x.RequiredJoltages.ShouldBeEquivalentTo(expectedJoltages));
     }
 
 
@@ -118,13 +124,13 @@ public class Day10Test
     {
         var input = "[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}\n[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}\n[.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}\n";
         var result = SolvePart2(input);
-        result.ShouldBe(7m);
+        result.ShouldBe(33m);
     }
 
     [Fact]
     public void ShouldFindPart2Solution()
     {
-        var result = SolvePart2(Day9Input);
+        var result = SolvePart2(Day10Input);
         result.ShouldBe(1525241870m);
     }
 }

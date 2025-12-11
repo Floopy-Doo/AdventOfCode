@@ -8,15 +8,20 @@ public static class Day10
         var problems = allProblems.Select(ParseProblem);
 
         List<Node[]> results = [];
-        Parallel.ForEach(problems, problem => results.Add(BFS(problem.IndicatorToggles, problem.RequiredIndicators)));
+        Parallel.ForEach(problems, problem => results.Add(BFSIndicators(problem.Toggles, problem.RequiredIndicators)));
 
         return results.Sum(x => x.Length);
     }
 
-
     public static decimal SolvePart2(string input)
     {
-        return 0;
+        var allProblems = input.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+        var problems = allProblems.Select(ParseProblem);
+
+        List<NodeJoltage[]> results = [];
+        Parallel.ForEach(problems, problem => results.Add(BFSJoltages(problem.Toggles, problem.RequiredJoltages)));
+
+        return results.Sum(x => x.Length);
     }
 
     public static Problem ParseProblem(string line)
@@ -40,7 +45,9 @@ public static class Day10
                 .ToArray())
             .ToArray();
 
-        return new Problem(indicators, toggles);
+        var joltages = inputs.OfType<Input.JoltageRequirements>().Single().Requirements;
+
+        return new Problem(indicators, joltages, toggles);
 
         static Input.Indicators ParseIndicator(string indicatorRaw) =>
             new(indicatorRaw.Trim('[', ']').Select(x => x is '#').ToArray());
@@ -52,7 +59,7 @@ public static class Day10
             new(joltageRaw.Trim('{', '}').Split(',').Select(int.Parse).ToArray());
     }
 
-    public static Node[] BFS(
+    public static Node[] BFSIndicators(
         bool[][] possibleToggles,
         bool[] currentIndicators)
     {
@@ -80,12 +87,36 @@ public static class Day10
         static bool AreSameIndicators(bool[] indicatorA, bool[] indicatorB) => indicatorA.Zip(indicatorB).Aggregate(true, (b, tuple) => b && tuple.First == tuple.Second);
     }
 
-    public sealed record Problem(bool[] RequiredIndicators, bool[][] IndicatorToggles);
-
-    public sealed record Node(bool[] UsedToggles, bool[] Indicators)
+    public static NodeJoltage[] BFSJoltages(bool[][] possibleToggles, int[] requiredJoltages)
     {
-        public override string ToString() => $"I:{Indicators.Aggregate("", (s, b) => $"{s}{(b ? "#" : ".")}")} | T:{UsedToggles.Aggregate("", (s, b) => $"{s}{(b ? 1 : 0)}")}";
+        Queue<(NodeJoltage CurrentNode, NodeJoltage[] Branch)> nextSearch = [];
+        nextSearch.Enqueue((new NodeJoltage([], requiredJoltages), []));
+
+        while (nextSearch.Count != 0)
+        {
+            var (currentNode, branch) = nextSearch.Dequeue();
+            if (currentNode.Joltages.All(x => x == 0)) return branch;
+
+            var newStates = possibleToggles
+                .Select(toggles => new NodeJoltage(toggles, ApplyToggle(currentNode.Joltages, toggles)));
+            var childSearches = newStates
+                .Where(nextNode => nextNode.Joltages.All(x => x >= 0))
+                .OrderBy(x => x.Joltages.Sum())
+                .Select(nextNode => (nextNode, branch.Append(nextNode).ToArray()));
+
+            foreach (var childSearch in childSearches) nextSearch.Enqueue(childSearch);
+        }
+
+        return [];
+
+        static int[] ApplyToggle(int[] joltages, bool[] toggles) => joltages.Zip(toggles).Select(x => x.Second ? (x.First - 1) : x.First).ToArray();
     }
+
+    public sealed record Problem(bool[] RequiredIndicators, int[] RequiredJoltages, bool[][] Toggles);
+
+    public sealed record Node(bool[] UsedToggles, bool[] Indicators);
+
+    public sealed record NodeJoltage(bool[] UsedToggles, int[] Joltages);
 
     private abstract record Input
     {
