@@ -20,8 +20,11 @@ public static class Day10
         var allProblems = input.Split("\n", StringSplitOptions.RemoveEmptyEntries);
         var problems = allProblems.Select(ParseProblem);
 
-        List<NodeJoltage[]> results = [];
-        Parallel.ForEach(problems, problem => results.Add(BFSJoltages(problem.Toggles, problem.RequiredJoltages)));
+        // List<NodeJoltage[]> results = [];
+        // Parallel.ForEach(problems, problem => results.Add(DFSJoltages2(problem.Toggles, problem.RequiredJoltages)));
+
+        var results = problems.Select(problem => DFSJoltages2(problem.Toggles, problem.RequiredJoltages));
+
 
         return results.Sum(x => x.Length);
     }
@@ -48,6 +51,8 @@ public static class Day10
             .ToArray();
 
         var joltages = inputs.OfType<Input.JoltageRequirements>().Single().Requirements;
+
+        if (joltages.Length != indicators.Length || toggles.Any(x => x.Length != joltages.Length)) throw new InvalidDataException($"{line}");
 
         return new Problem(indicators, joltages, toggles);
 
@@ -96,36 +101,151 @@ public static class Day10
         static bool IsResult(Node node) => node.Indicators.All(x => !x);
     }
 
-    public static NodeJoltage[] BFSJoltages(bool[][] possibleToggles, int[] requiredJoltages)
+    public static NodeJoltage[] DFSJoltages(bool[][] possibleToggles, int[] requiredJoltages)
     {
-        Queue<(NodeJoltage CurrentNode, NodeJoltage[] Branch)> nextSearch = [];
-        nextSearch.Enqueue((new NodeJoltage([], requiredJoltages), []));
+        var elementPriority = Enumerable
+            .Range(0, requiredJoltages.Length)
+            .Select(i => (i, NoOfTogglesApplicable: possibleToggles.Select(t => t[i] ? 1 : 0).Sum()))
+            .OrderBy(x => x.NoOfTogglesApplicable)
+            .Select(x => x.i)
+            .ToList();
 
-        while (nextSearch.Count != 0)
+        List<NodeJoltage[]> fullSolutions = [];
+
+        Queue<NodeJoltage[]> remainingPartialSolutions = [];
+        remainingPartialSolutions.Enqueue([new NodeJoltage([], requiredJoltages)]);
+
+        foreach (var elementIndex in elementPriority)
         {
-            var (currentNode, branch) = nextSearch.Dequeue();
-            if (IsResult(currentNode)) return branch;
+            var applicableToggles = possibleToggles
+                .Where(x => x[elementIndex])
+                .OrderBy(x => x.Count(z => z))
+                .ToList();
 
-            var newStates = possibleToggles
-                .Select(toggles => new NodeJoltage(toggles, ApplyToggle(currentNode.Joltages, toggles)));
-            var childSearches = newStates
-                .Where(nextNode => nextNode.Joltages.All(x => x >= 0))
-                .OrderBy(x => x.Joltages.Sum())
-                .Select(nextNode => (nextNode, branch.Append(nextNode).ToArray()));
-
-            foreach (var childSearch in childSearches)
+            List<NodeJoltage[]> partialSolutionsForNextIteration = [];
+            do
             {
-                if (IsResult(childSearch.nextNode)) return childSearch.Item2;
+                var partialSolution = remainingPartialSolutions.Dequeue();
+                foreach (var toggle in applicableToggles)
+                {
+                    var solution = RecursiveApplyToggle(toggle, partialSolution[^1].Joltages, partialSolution);
+                    if (solution.Any(IsResult)) fullSolutions.Add(solution);
+                    else if (IsDeadEnd(solution[^1])) continue;
+                    else partialSolutionsForNextIteration.Add(solution);
+                }
+            } while (remainingPartialSolutions.Count != 0);
 
-                nextSearch.Enqueue(childSearch);
-            }
+            remainingPartialSolutions = new Queue<NodeJoltage[]>(partialSolutionsForNextIteration);
         }
 
-        return [];
+        return fullSolutions.OrderBy(x => x.Length).First();
+
+        static NodeJoltage[] RecursiveApplyToggle(bool[] toggles, int[] initialJoltages, NodeJoltage[] branch)
+        {
+            var result = new NodeJoltage(toggles,ApplyToggle(initialJoltages, toggles));
+            NodeJoltage[] newBranch = [.. branch, result];
+            if (IsResult(result) || IsDeadEnd(result)) return newBranch;
+            return RecursiveApplyToggle(result.UsedToggles, result.Joltages, newBranch);
+        }
 
         static int[] ApplyToggle(int[] joltages, bool[] toggles) => joltages.Zip(toggles).Select(x => x.Second ? (x.First - 1) : x.First).ToArray();
         static bool IsResult(NodeJoltage node) => node.Joltages.All(x => x == 0);
+        static bool IsDeadEnd(NodeJoltage node) => node.Joltages.Any(x => x < 0);
     }
+
+
+    public static NodeJoltage[] DFSJoltages2(bool[][] possibleToggles, int[] requiredJoltages)
+    {
+        // Calculate Index Priority
+
+        // Recursive
+        // - Give Index
+        // - Give Remaining Buttons
+        // - Give CurrentBranch
+        // Filter Buttons by Priority
+        // For each Button
+        //      Apply the max amount of presses
+        //      Abort if solution is found
+        //      Recurse (Index++, Remaing Buttons without Button)
+        //
+        var orderedEnumerable = Enumerable
+            .Range(0, requiredJoltages.Length)
+            .Select(i => (i, NoOfTogglesApplicable: possibleToggles.Count(t => t[i])))
+            .OrderBy(x => x.NoOfTogglesApplicable);
+        var indexPriority = orderedEnumerable
+            .Select(x => x.i)
+            .ToArray();
+
+        var branches = ButtonRecursion(indexPriority, possibleToggles, [new NodeJoltage([], requiredJoltages)]);
+        return branches.OrderBy(x => x.Length).First()[1..];
+
+
+        static NodeJoltage[][] ButtonRecursion(int[] indexPriorities, bool[][] unusedToggles, NodeJoltage[] branch)
+        {
+            var applicableToggles = unusedToggles
+                .Where(x => x[indexPriorities[0]])
+                .OrderBy(x => x.Count(z => z))
+                .ToList();
+
+            List<NodeJoltage[]> solutions = [];
+            foreach (var toggle in applicableToggles)
+            {
+                var remainingToggles = unusedToggles.Except([toggle]).ToArray();
+                var toggleBranch = remainingToggles.Length > 1
+                    ? RecursiveApplyToggle(toggle, branch[^1].Joltages, branch, remainingToggles[0])
+                    : RecursiveApplyToggle(toggle, branch[^1].Joltages, branch, null);
+                if (IsResult(toggleBranch[^1]))
+                {
+                    solutions.Add(toggleBranch);
+                    continue;
+                }
+
+                if (indexPriorities.Length == 1)
+                {
+                    continue;
+                }
+
+                solutions.AddRange(
+                    ButtonRecursion(
+                        indexPriorities[1..],
+                        remainingToggles,
+                        toggleBranch));
+            }
+
+            return solutions.ToArray();
+        }
+
+        static NodeJoltage[] RecursiveApplyToggle(bool[] toggles, int[] initialJoltages, NodeJoltage[] branch, bool[]? nextRemainingToggle)
+        {
+            var result = new NodeJoltage(toggles, ApplyToggle(initialJoltages, toggles));
+            NodeJoltage[] newBranch = [.. branch, result];
+            if (IsResult(result)) return newBranch;
+            if (IsDeadEnd(result)) return branch;
+            if (HaveAllPositionOfNextButtonEqualized(result, nextRemainingToggle)) return newBranch;
+            return RecursiveApplyToggle(result.UsedToggles, result.Joltages, newBranch, nextRemainingToggle);
+        }
+
+        static int[] ApplyToggle(int[] joltages, bool[] toggles) =>
+            joltages.Zip(toggles).Select(x => x.Second ? x.First - 1 : x.First).ToArray();
+
+        static bool IsResult(NodeJoltage node) =>
+            node.Joltages.All(x => x == 0);
+
+        static bool IsDeadEnd(NodeJoltage node) =>
+            node.Joltages.Any(x => x < 0);
+
+        static bool HaveAllPositionOfNextButtonEqualized(NodeJoltage node, bool[]? nextRemainingToggle) =>
+            nextRemainingToggle is not null && node.Joltages.Zip(nextRemainingToggle).Where(x => x.Second).GroupBy(x => x.First).Count() == 1;
+    }
+
+    public static NodeJoltage[] DFSJoltages3(bool[][] possibleToggles, int[] requiredJoltages)
+    {
+        return [];
+
+
+
+    }
+
 
     public sealed record Problem(bool[] RequiredIndicators, int[] RequiredJoltages, bool[][] Toggles);
 
