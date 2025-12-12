@@ -36,8 +36,8 @@ public class Day11Test
     [Fact]
     public void ShouldFindPart1Solution()
     {
-        var result = SolvePart1(Day10Input);
-        result.ShouldBe(-1m);
+        var result = SolvePart1(Day11Input);
+        result.ShouldBe(523m);
     }
 
     [Theory]
@@ -59,7 +59,7 @@ public class Day11Test
     [Fact]
     public void ShouldFindPart2Solution()
     {
-        var result = SolvePart2(Day10Input);
+        var result = SolvePart2(Day11Input);
         result.ShouldBe(-1m);
     }
 }
