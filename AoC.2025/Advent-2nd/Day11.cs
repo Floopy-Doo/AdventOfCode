@@ -2,20 +2,23 @@ namespace AoC._2025.Advent_2nd;
 
 public static class Day11
 {
-    private static readonly Id Start = new("you");
-    private static readonly Id End = new("out");
+    private static readonly Id You = new("you");
+    private static readonly Id Server = new("svr");
+    private static readonly Id Out = new("out");
+    private static readonly Id DigitalToAnalogConverter = new("dac");
+    private static readonly Id FastFourierTransformation = new("fft");
 
     public static decimal SolvePart1(string input)
     {
         var connections = input.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(Parse).ToArray();
-        var you = connections.Single(x => x.Id == Start);
+        var you = connections.Single(x => x.Id == You);
 
         var paths = Recursion(you, [], connections.Except([you]).ToDictionary(x => x.Id, x => x));
         return paths.Length;
 
         static Node[][] Recursion(Node current, Id[] visited, IReadOnlyDictionary<Id, Node> allNodes)
         {
-            if (current.Connections.Contains(End)) return [[current]];
+            if (current.Connections.Contains(Out)) return [[current]];
 
             Id[] extendedVisited = [.. visited, current.Id];
             Node[][] allPaths = current
@@ -32,8 +35,42 @@ public static class Day11
 
     public static decimal SolvePart2(string input)
     {
-        return 0;
+        var connections = input.Split("\n", StringSplitOptions.RemoveEmptyEntries).Select(Parse).ToArray();
+        var start = connections.Single(x => x.Id == Server);
+
+        var nodeDict = connections
+            .Except([start])
+            .Append(new Node(Out, []))
+            .ToDictionary(x => x.Id, x => x);
+
+        var paths = Recursion(start, [], nodeDict, []);
+        return paths.Count;
+
+
+        static List<List<Id>> Recursion(
+            Node current,
+            Id[] path,
+            IReadOnlyDictionary<Id, Node> nodeDict,
+            Dictionary<Id, List<List<Id>>> analyzedNodes)
+        {
+            if (current.Id == Out && path.Intersect([DigitalToAnalogConverter, FastFourierTransformation]).Count() == 2)
+                return [[.. path, current.Id]];
+
+            if (current.Id == Out)
+                return [];
+
+            var foundNodes = current
+                .Connections
+                .Except(analyzedNodes.Keys)
+                .Select(nextNodeId => Recursion(nodeDict[nextNodeId], [.. path, current.Id], nodeDict, analyzedNodes))
+                .Where(x => x.Count > 0)
+                .SelectMany(x => x)
+                .ToList();
+
+            return foundNodes;
+        }
     }
+    
 
     private static Node Parse(string line)
     {

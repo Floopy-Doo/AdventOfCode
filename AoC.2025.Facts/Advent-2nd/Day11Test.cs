@@ -15,6 +15,8 @@ public class Day11Test
 
     public static TheoryData<string, decimal> SampleDataPart2 = new()
     {
+        { "you: dac fft\nsvr: you\ndac: out\nfft: eee\neee: out\n", 0 },
+        { "svr: you dac\nyou: fft\ndac: eee\nfft: dac\neee: out\n", 1 },
     };
 
     [Theory]
@@ -51,9 +53,9 @@ public class Day11Test
     [Fact]
     public void ShouldSolvePart2FullSample()
     {
-        var input = "aaa: you hhh\nyou: bbb ccc\nbbb: ddd eee\nccc: ddd eee fff\nddd: ggg\neee: out\nfff: out\nggg: out\nhhh: ccc fff iii\niii: out\n";
+        var input = "svr: aaa bbb\naaa: fft\nfft: ccc\nbbb: tty\ntty: ccc\nccc: ddd eee\nddd: hub\nhub: fff\neee: dac\ndac: fff\nfff: ggg hhh\nggg: out\nhhh: out\n";
         var result = SolvePart2(input);
-        result.ShouldBe(-1m);
+        result.ShouldBe(2m);
     }
 
     [Fact]
