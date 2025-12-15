@@ -44,29 +44,30 @@ public static class Day11
             .ToDictionary(x => x.Id, x => x);
 
         var paths = Recursion(start, [], nodeDict, []);
-        return paths.Count;
+        return paths.Count(path => path.Intersect([DigitalToAnalogConverter, FastFourierTransformation]).Count() == 2);
 
 
-        static List<List<Id>> Recursion(
+        static List<IEnumerable<Id>> Recursion(
             Node current,
             Id[] path,
             IReadOnlyDictionary<Id, Node> nodeDict,
-            Dictionary<Id, List<List<Id>>> analyzedNodes)
+            Dictionary<Id, List<IEnumerable<Id>>> analyzedNodes)
         {
-            if (current.Id == Out && path.Intersect([DigitalToAnalogConverter, FastFourierTransformation]).Count() == 2)
-                return [[.. path, current.Id]];
+            if (analyzedNodes.TryGetValue(current.Id, out var foundPaths))
+                return foundPaths.Select(x => path.Concat(x.SkipWhile(z => z != current.Id))).ToList();
 
             if (current.Id == Out)
-                return [];
+                return [[.. path, current.Id]];
 
             var foundNodes = current
                 .Connections
-                .Except(analyzedNodes.Keys)
+                .Except(path)
                 .Select(nextNodeId => Recursion(nodeDict[nextNodeId], [.. path, current.Id], nodeDict, analyzedNodes))
                 .Where(x => x.Count > 0)
                 .SelectMany(x => x)
                 .ToList();
 
+            analyzedNodes.Add(current.Id, foundNodes);
             return foundNodes;
         }
     }
